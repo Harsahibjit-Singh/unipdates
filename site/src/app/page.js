@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 
 const HomePage = () => {
-  const { user, isAuthenticated, accessToken, login, loading: authLoading } = useAuth();
+  const { user, isAuthenticated, accessToken, login, updateUserContext, loading: authLoading } = useAuth();
   const [allUpdates, setAllUpdates] = useState([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(true);
   const [errorAnnouncements, setErrorAnnouncements] = useState(null);
@@ -30,62 +30,63 @@ const HomePage = () => {
   const [collegeLoading, setCollegeLoading] = useState(true);
 
   // Profile completeness check
-  useEffect(() => {
+useEffect(() => {
     console.log('--- Profile Modal Check ---');
     console.log('authLoading:', authLoading);
     console.log('isAuthenticated:', isAuthenticated);
     console.log('user:', user);
-    if (user) {
-        console.log('user.passoutYear:', user.passoutYear);
-        console.log('user.college:', user.college);
-    }
 
-    // Only perform the check if authentication loading is complete and user is authenticated
-    if (!authLoading && isAuthenticated && user) {
-      // Trim strings to handle cases where college might be just whitespace or passoutYear empty string
-      if (!user.passoutYear || String(user.passoutYear).trim() === '' || !user.college || user.college.trim() === '') {
-        console.log('Condition met: Showing complete profile modal.');
-        setShowCompleteProfileModal(true);
-      } else {
-        console.log('Condition NOT met: Hiding complete profile modal.');
-        setShowCompleteProfileModal(false); // Hide if profile is complete
-      }
+    // Wait until authentication is settled AND the user object contains the database _id
+    if (!authLoading && isAuthenticated && user && user._id !== undefined) {
+        // Now that we have the full user profile, check if it's incomplete
+        if (!user.passoutYear || String(user.passoutYear).trim() === '' || !user.college || user.college.trim() === '') {
+            console.log('Condition met with full profile: Showing complete profile modal.');
+            setShowCompleteProfileModal(true);
+        } else {
+            console.log('Condition NOT met: Hiding complete profile modal.');
+            setShowCompleteProfileModal(false);
+        }
     } else if (!authLoading && !isAuthenticated) {
         // If auth loading is done and user is not authenticated, ensure modal is hidden
         console.log('User not authenticated, hiding modal.');
         setShowCompleteProfileModal(false);
-    } else if (authLoading) {
-        console.log('Auth is still loading, waiting for user data...');
+    } else {
+        console.log('Waiting for authentication and/or full user profile...');
     }
-  }, [user, isAuthenticated, authLoading]);
+}, [user, isAuthenticated, authLoading]); // Dependencies remain the same
 
   // NEW useEffect to fetch full user profile after initial auth loading
-  useEffect(() => {
-    const fetchFullUserProfile = async () => {
-      if (!authLoading && isAuthenticated && user && user._id && 
-          (user.passoutYear === undefined || user.college === undefined)) {
-        console.log('Fetching full user profile from /api/users/:id');
-        try {
-          const response = await fetch(`/api/users/${user._id}`, {
-            headers: { 'Authorization': `Bearer ${accessToken}` },
-          });
+// In page.js, replace the old fetchFullUserProfile useEffect with this one
 
-          if (response.ok) {
-            const fullUserData = await response.json();
-            console.log('Full user data received:', fullUserData);
-            // Update the user in AuthContext with the more complete data
-            login(accessToken, fullUserData); 
-          } else {
-            console.error('Failed to fetch full user profile:', response.statusText);
-          }
-        } catch (error) {
-          console.error('Error fetching full user profile:', error);
+useEffect(() => {
+  const fetchFullUserProfile = async () => {
+    // This condition checks if we are logged in but DON'T have the database _id yet.
+    // This is the exact state after a Google login.
+    if (!authLoading && isAuthenticated && user && !user._id) {
+      console.log('Partial user profile detected. Fetching full profile from /api/auth/me');
+      try {
+        // Use the /api/auth/me endpoint, which finds the user via their token.
+        const response = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${accessToken}` },
+        });
+
+        if (response.ok) {
+          const fullUserData = await response.json();
+          console.log('Full user data received:', fullUserData);
+          
+          // Use the correct, safe function to update the context WITHOUT reloading.
+          updateUserContext(fullUserData); 
+        } else {
+          console.error('Failed to fetch full user profile:', response.statusText);
         }
+      } catch (error) {
+        console.error('Error fetching full user profile:', error);
       }
-    };
+    }
+  };
 
-    fetchFullUserProfile();
-  }, [authLoading, isAuthenticated, user, accessToken, login]); // Re-run if these change
+  fetchFullUserProfile();
+}, [authLoading, isAuthenticated, user, accessToken, updateUserContext]);
 
 
   // Initialize form fields if user data is present (e.g., if user partially filled)
@@ -152,7 +153,7 @@ const HomePage = () => {
 
       const data = await response.json();
       console.log('Profile update successful:', data.user);
-      login(accessToken, data.user); // Update the user context with the new profile data
+      updateUserContext(data.user); // Update the user context with the new profile data
       setShowCompleteProfileModal(false); // Close the modal
     } catch (err) {
       setProfileError(err.message);
@@ -290,37 +291,37 @@ const HomePage = () => {
 
   return (
     <>
-      {/* Complete Profile Modal */}
+{/* Complete Profile Modal */}
       {showCompleteProfileModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Complete Your Profile</h2>
-            {profileError && <p className="text-red-500 text-sm mb-2">{profileError}</p>}
+          <div className="bg-unilight-card dark:bg-unidark-card p-6 rounded-lg w-full max-w-md shadow-lg border border-unilight-border-gray-200 dark:border-unidark-border-gold-10">
+            <h2 className="text-xl font-bold mb-4 text-unilight-text-800 dark:text-unidark-text-100">Complete Your Profile</h2>
+            {profileError && <p className="text-unilight-accent-red dark:text-unidark-accent-red text-sm mb-2">{profileError}</p>}
 
             <div className="mb-4">
-              <label className="block font-medium mb-1">Passout Year</label>
+              <label className="block font-medium mb-1 text-unilight-text-700 dark:text-unidark-text-200">Passout Year</label>
               <input
                 type="number"
                 value={passoutYear}
                 onChange={(e) => setPassoutYear(e.target.value)}
-                className="w-full border p-2 rounded"
+                className="w-full border border-unilight-border-gray-200 dark:border-unidark-border-gold-10 p-2 rounded-md bg-unilight-bg dark:bg-unidark-bg text-unilight-text-700 dark:text-unidark-text-200 placeholder-unilight-text-400 dark:placeholder-unidark-text-500 focus:outline-none focus:ring-2 focus:ring-unilight-accent-amber dark:focus:ring-unidark-accent-gold transition-colors"
                 placeholder="e.g. 2025"
               />
             </div>
 
             <div className="mb-4">
-              <label className="block font-medium mb-1">Select College</label>
+              <label className="block font-medium mb-1 text-unilight-text-700 dark:text-unidark-text-200">Select College</label>
               {collegeLoading ? (
-                <p className="text-sm text-gray-500">Loading colleges...</p>
+                <p className="text-sm text-unilight-text-500 dark:text-unidark-text-400">Loading colleges...</p>
               ) : (
                 <select
                   value={college}
                   onChange={(e) => setCollege(e.target.value)}
-                  className="w-full border p-2 rounded"
+                  className="w-full border border-unilight-border-gray-200 dark:border-unidark-border-gold-10 p-2 rounded-md bg-unilight-bg dark:bg-unidark-bg text-unilight-text-700 dark:text-unidark-text-200 focus:outline-none focus:ring-2 focus:ring-unilight-accent-amber dark:focus:ring-unidark-accent-gold transition-colors"
                 >
-                  <option value="">-- Select College --</option>
+                  <option value="" className="bg-unilight-bg dark:bg-unidark-bg">-- Select College --</option>
                   {collegeList.map((col) => (
-                    <option key={col._id} value={col.name}>
+                    <option key={col._id} value={col.name} className="bg-unilight-bg dark:bg-unidark-bg">
                       {col.name}
                     </option>
                   ))}
@@ -330,7 +331,7 @@ const HomePage = () => {
 
             <button
               onClick={handleProfileSubmit}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
+              className="bg-unilight-accent-amber dark:bg-unidark-accent-gold text-white px-4 py-2 rounded-lg hover:bg-unilight-accent-amber-400 dark:hover:bg-unidark-accent-gold-30 w-full font-medium shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={savingProfile}
             >
               {savingProfile ? 'Saving...' : 'Save & Continue'}
@@ -532,7 +533,7 @@ const HomePage = () => {
                   transition={{ duration: 0.5, delay: testimonial.delay }}
                   className="bg-unilight-card dark:bg-unidark-card p-6 rounded-2xl shadow-md border border-unilight-border-rose-200 dark:border-unidark-border-rose-30"
                 >
-                  <div className="text-unilight-accent-amber dark:text-unidark-accent-gold text-3xl mb-4">"</div>
+                  <div className="text-unilight-accent-amber dark:text-unidark-accent-gold text-3xl mb-4">&quot;</div>
                   <p className="text-lg italic text-unilight-text-700 dark:text-unidark-text-200 mb-6">{testimonial.quote}</p>
                   <p className="text-unilight-accent-red dark:text-unidark-accent-red font-medium">— {testimonial.name}</p>
                 </motion.div>

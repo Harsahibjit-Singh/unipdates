@@ -75,7 +75,7 @@ const PublicUsersPage = () => {
   // Redirect if not authenticated or not a superadmin
   useEffect(() => {
     if (!authLoading && (!isAdminAuthenticated || !isSuperadmin)) {
-      router.push('/admin/login'); // Redirect to admin login
+      router.push('/'); // Redirect to admin login
     }
   }, [isAdminAuthenticated, authLoading, isSuperadmin, router]);
 

@@ -23,7 +23,7 @@ export const GET = adminAuthMiddleware(async (req) => {
     console.error("Admin API - Error fetching featured items:", error);
     return NextResponse.json({ message: 'Failed to fetch featured items', error: error.message }, { status: 500 });
   }
-}, ['superadmin']); // Only superadmin can view featured items
+}, ['superadmin', 'uniadmin']); // Only superadmin and uniadmin can view featured items
 
 // POST a new featured item (requires superadmin)
 // POST a new featured item (expects JSON body with img URL)

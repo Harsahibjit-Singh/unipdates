@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 const AdminNavbar = () => {
-  const { isAdminAuthenticated, adminUser, isSuperadmin, logout } = useAdminAuth();
+  const { isAdminAuthenticated, adminUser, isSuperadmin, adminLogout } = useAdminAuth();
   const pathname = usePathname(); // Get current path for active link highlighting
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -43,8 +43,8 @@ const AdminNavbar = () => {
 
   // Handle logout
   const handleLogout = () => {
-    logout();
-    router.push('/admin/login'); // Redirect to admin login page after logout
+    adminLogout();
+    router.push('/'); // Redirect to admin login page after logout
   };
 
   // Only render the navbar if the user is authenticated

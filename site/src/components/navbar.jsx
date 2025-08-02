@@ -10,6 +10,7 @@ const navLinks = [
   { href: '/', label: 'Home', icon: '🏠' },
   { href: '/notes', label: 'Notes', icon: '📚' },
   { href: '/internships', label: 'Internships', icon: '💼' },
+  { href: '/#announcements', label: 'Global Updates', icon: '🌍' },
 ];
 
 const isActiveTab = (pathname, href) => {
@@ -87,6 +88,7 @@ const Navbar = () => {
         {/* Mobile Menu Button */}
         <div className="md:hidden flex items-center gap-4">
           <ThemeToggler />
+          {isAuthenticated && (
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -98,6 +100,7 @@ const Navbar = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path>
             </svg>
           </motion.button>
+          )}
         </div>
 
         {/* Desktop Navigation */}

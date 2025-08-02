@@ -248,7 +248,7 @@ export default function ContactPage() {
                 className="bg-unilight-card-amber-50 dark:bg-unidark-accent-gold-10 border-l-4 border-unilight-accent-amber dark:border-unidark-accent-gold text-unilight-text-700 dark:text-unidark-text-200 p-4 rounded-md overflow-hidden" role="alert"
               >
                 <p className="font-bold flex items-center">
-                  <Briefcase className="w-5 h-5 mr-2 text-unilight-accent-amber dark:text-unidark-accent-gold" />
+                  {/* <Briefcase className="w-5 h-5 mr-2 text-unilight-accent-amber dark:text-unidark-accent-gold" /> */}
                   Your College:
                 </p>
                 {fetchingCollegeId ? (

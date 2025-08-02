@@ -56,7 +56,7 @@ const DashboardPage = () => {
 
   useEffect(() => {
     if (!authLoading && !isAdminAuthenticated) {
-      router.push('/admin/login'); // Corrected redirect path for admin login
+      router.push('/'); // Corrected redirect path for admin login
     }
   }, [isAdminAuthenticated, authLoading, router]);
 

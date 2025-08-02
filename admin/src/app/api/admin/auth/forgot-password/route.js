@@ -1,50 +1,47 @@
 // app/api/admin/auth/forgot-password/route.js
 import adminDbConnect from '@/lib/adminDbConnect';
 import AdminUser from '@/models/AdminUser';
-import OTP from '@/models/OTP';
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
+// No longer need bcryptjs here, as the model handles hashing
+// import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
   await adminDbConnect();
   try {
-    const { email, otp, newPassword } = await req.json();
+    const { email, newPassword: rawPassword } = await req.json();
 
-    if (!email || !otp || !newPassword) {
-      return NextResponse.json({ message: 'Email, OTP, and new password are required.' }, { status: 400 });
+    // 1. Trim the password immediately to ensure consistency
+    const newPassword = String(rawPassword || '').trim();
+
+    // 2. Enhanced validation on the trimmed password
+    if (!email?.trim()) {
+      return NextResponse.json({ message: 'Email is required.' }, { status: 400 });
+    }
+    if (!newPassword) {
+      return NextResponse.json({ message: 'New password is required.' }, { status: 400 });
+    }
+    if (newPassword.length < 8) {
+      return NextResponse.json({ message: 'Password must be at least 8 characters.' }, { status: 400 });
     }
 
-    const adminUser = await AdminUser.findOne({ email });
+    // 3. Find the user
+    // We need to select '+password' so we can modify it.
+    const adminUser = await AdminUser.findOne({ email }).select('+password');
     if (!adminUser) {
       return NextResponse.json({ message: 'Admin user not found.' }, { status: 404 });
     }
 
-    // Verify OTP (similar logic from verify-otp)
-    const storedOTP = await OTP.findOne({
-      adminId: adminUser._id,
-      email: adminUser.email,
-    }).sort({ createdAt: -1 });
+    // 4. Update password with the PLAIN-TEXT value.
+    // The Mongoose pre('save') hook in your AdminUser model will automatically hash it.
+    adminUser.password = newPassword;
 
-    if (!storedOTP || storedOTP.otp !== otp || storedOTP.expiresAt < new Date()) {
-      if (storedOTP) {
-        await OTP.findByIdAndDelete(storedOTP._id); // Delete invalid OTP
-      }
-      return NextResponse.json({ message: 'Invalid or expired OTP.' }, { status: 400 });
-    }
-
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    // Update user's password and invalidate all old sessions
-    adminUser.password = hashedPassword;
+    // 5. Invalidate old sessions and save the user
     adminUser.sessionVersion += 1; // Invalidate all existing tokens
     adminUser.refreshTokens = []; // Clear all refresh tokens
-    await adminUser.save();
-
-    // Delete the used OTP
-    await OTP.findByIdAndDelete(storedOTP._id);
+    await adminUser.save(); // The hashing happens automatically here
 
     return NextResponse.json({ message: 'Password reset successfully.' }, { status: 200 });
+
   } catch (error) {
     console.error("Admin Forgot Password error:", error);
     return NextResponse.json({ message: 'Failed to reset password.', error: error.message }, { status: 500 });

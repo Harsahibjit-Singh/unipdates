@@ -280,18 +280,16 @@ const PublicNotesPage = () => {
                 {selectedTopic.importantQuestions && selectedTopic.importantQuestions.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {selectedTopic.importantQuestions.map((iq, index) => (
-                      <motion.a
+                      <motion.div // Changed from motion.a to motion.div
                         key={index}
-                        href={iq.questionsText}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        // Removed href, target, and rel attributes
                         whileHover={{ y: -3, boxShadow: '0 4px 16px rgba(255, 59, 59, 0.25)' }}
                         whileTap={{ scale: 0.98 }}
                         className="block bg-unilight-card dark:bg-unidark-card p-4 rounded-lg shadow hover:shadow-md transition-all duration-200 flex items-center space-x-3 border border-unilight-border-gray-200 dark:border-unidark-border-gold-10"
                       >
                         <HelpCircle className="h-6 w-6 text-unilight-accent-amber dark:text-unidark-accent-gold" />
-                        <span className="text-unilight-text-700 dark:text-unidark-text-200 hover:underline">{iq.title}</span>
-                      </motion.a>
+                        <span className="text-unilight-text-700 dark:text-unidark-text-200">{iq.questionsText}</span> {/* Displaying questionsText as plain text */}
+                      </motion.div>
                     ))}
                   </div>
                 ) : (

@@ -25,7 +25,10 @@ export const POST = adminAuthMiddleware(async (req) => { // This route should al
   await adminDbConnect();
   try {
     const body = await req.json();
-    const { username, email, password, name, role, college, passoutyear, pno, img_url } = body;
+
+        // Immediately trim the password after getting it from the request
+    const { username, email, password: rawPassword, name, role, college, passoutyear, pno, img_url } = body;
+    const password = String(rawPassword || '').trim();
 
     // 1. Basic validation for required fields
     if (!username || !email || !password || !name || !role || !passoutyear || !pno || !img_url) {

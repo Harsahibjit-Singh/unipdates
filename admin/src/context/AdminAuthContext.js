@@ -45,7 +45,7 @@ export const AdminAuthProvider = ({ children }) => {
       Cookies.remove('adminAccessTokenClient', { path: '/' });
       Cookies.remove('admin_refreshToken', { path: '/api/admin/auth/refresh-token' }); // Ensure client-side knows it's gone
       setLoading(false);
-      router.push('/login'); // Redirect to admin login page
+      router.push('/'); // Redirect to admin login page
     }
   }, [router]);
 

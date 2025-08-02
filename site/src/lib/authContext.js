@@ -24,7 +24,17 @@ export const AuthProvider = ({ children }) => {
     setAccessToken(token);
     setUser(userData);
     localStorage.setItem('accessToken', token);
+    console.log("Login successful, forcing page reload.");
+    // window.location.reload();
   }, []);
+
+  // ADD THIS NEW FUNCTION for updating user data without a full login
+const updateUserContext = useCallback((newUserData) => {
+  setUser(currentUser => ({
+    ...currentUser,
+    ...newUserData
+  }));
+}, []);
 
   // Logout function
   const logout = useCallback(() => {
@@ -166,6 +176,7 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     login,
+    updateUserContext,
     logout,
     isAuthenticated: !!accessToken && !!user,
     isProfileIncomplete,

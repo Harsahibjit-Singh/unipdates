@@ -55,7 +55,7 @@ const FeaturedPage = () => {
   // Redirect if not authenticated or not a superadmin
   useEffect(() => {
     if (!authLoading && (!isAdminAuthenticated || !isSuperadmin)) {
-      router.push('/admin/login');
+      router.push('/');
     }
   }, [isAdminAuthenticated, authLoading, isSuperadmin, router]);
 

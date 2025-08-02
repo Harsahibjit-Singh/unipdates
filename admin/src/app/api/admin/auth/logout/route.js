@@ -31,7 +31,7 @@ export async function POST(req) {
 
     // Clear the refresh token cookie
     const response = NextResponse.json({ message: 'Logged out successfully.' }, { status: 200 });
-    response.cookies.delete('admin_refreshToken', { path: '/api/admin/auth/refresh-token' }); // Ensure path matches where it was set
+    response.cookies.delete('admin_refreshToken', { path: '/' }); // Ensure path matches where it was set
 
     return response;
   } catch (error) {

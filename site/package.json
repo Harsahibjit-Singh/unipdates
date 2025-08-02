@@ -25,6 +25,7 @@
     "nodemailer": "^7.0.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "tabler-icons-react": "^1.56.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

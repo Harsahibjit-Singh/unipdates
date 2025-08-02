@@ -54,13 +54,14 @@ export async function POST(req) {
     );
 
     // Set new refresh token as HttpOnly cookie
-    response.cookies.set('admin_refreshToken', newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: parseInt(process.env.ADMIN_REFRESH_TOKEN_EXPIRATION_MS, 10) / 1000,
-      path: '/api/admin/auth/refresh-token',
-      sameSite: 'strict',
-    });
+      response.cookies.set('admin_refreshToken', newRefreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: parseInt(process.env.ADMIN_REFRESH_TOKEN_EXPIRATION_MS, 10) / 1000,
+        path: '/', // ✅ cookie accessible everywhere and deletable from logout route
+        sameSite: 'strict',
+      });
+
 
     return response;
   } catch (error) {

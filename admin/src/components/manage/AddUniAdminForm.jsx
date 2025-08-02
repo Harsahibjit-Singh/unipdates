@@ -112,7 +112,7 @@ const AddUniAdminForm = ({ colleges, showMessage, refreshData }) => {
             <p><strong>Email:</strong> ${formData.email}</p>
             <p><strong>Temporary Password:</strong> <code>${randomPassword}</code></p>
             <p>For security reasons, please log in and immediately change your password using the "Forgot Password" link on the login page.</p>
-            <p>Login Page: <a href="${window.location.origin}/login">${window.location.origin}/login</a></p>
+            <p>Login Page: <a href="https://admin-tau-lemon.vercel.app">https://admin-tau-lemon.vercel.app</a></p>
             <p>If you did not request this, please contact support immediately.</p>
             <p>Regards,<br>UniUpdates Admin Team</p>
           `,

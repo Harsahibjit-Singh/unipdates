@@ -76,7 +76,7 @@ const SupportPage = () => {
   // Redirect if not authenticated or not authorized
   useEffect(() => {
     if (!authLoading && (!isAdminAuthenticated || (!isSuperadmin && adminUser?.role !== 'uniadmin'))) {
-      router.push('/admin/login');
+      router.push('/');
     }
   }, [isAdminAuthenticated, authLoading, isSuperadmin, adminUser, router]);
 

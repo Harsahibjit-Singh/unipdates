@@ -457,27 +457,50 @@ const NoteForm = ({ type, note, showMessage, refreshData, subjects, onCancel }) 
     }));
   };
 
-  const uploadFileToCloudinary = async (file, folder, resourceType) => {
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', file);
-    uploadFormData.append('folder', folder);
-    uploadFormData.append('resourceType', resourceType); // This should be 'image' or 'raw'
+// Inside the NoteForm component in app/notes/page.jsx
 
-    const response = await fetch('/api/admin/upload-file', { // Assuming this is your single upload endpoint
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
-      body: uploadFormData,
-    });
+const uploadFileToCloudinary = async (file, folder) => {
+  // 1. Get the signature from your NEW backend route
+  const signatureResponse = await fetch('/api/admin/generate-upload-signature', { // <-- CHANGE THIS LINE
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ folder }),
+  });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || `Failed to upload ${file.name}.`);
-    }
-    // Assuming your upload-file API returns 'imageUrl' for both images and raw (PDFs)
-    return data.imageUrl;
-  };
+  if (!signatureResponse.ok) {
+    throw new Error('Failed to get upload signature.');
+  }
+
+  const { signature, timestamp } = await signatureResponse.json();
+
+  // 2. Prepare the form data to send to Cloudinary's API
+  const uploadFormData = new FormData();
+  uploadFormData.append('file', file);
+  uploadFormData.append('folder', folder);
+  uploadFormData.append('signature', signature);
+  uploadFormData.append('timestamp', timestamp);
+  uploadFormData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY);
+
+  // 3. Upload the file directly to Cloudinary
+  const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`;
+
+  const cloudinaryResponse = await fetch(cloudinaryUrl, {
+    method: 'POST',
+    body: uploadFormData,
+  });
+
+  const cloudinaryData = await cloudinaryResponse.json();
+
+  if (!cloudinaryResponse.ok) {
+    throw new Error(cloudinaryData.error.message || `Failed to upload ${file.name}.`);
+  }
+
+  // 4. Return the secure URL of the uploaded file
+  return cloudinaryData.secure_url;
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
